@@ -1,0 +1,2 @@
+"""Development data seeding placeholder."""
+

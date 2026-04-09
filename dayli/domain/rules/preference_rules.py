@@ -1,0 +1,2 @@
+"""Preference rules placeholder."""
+

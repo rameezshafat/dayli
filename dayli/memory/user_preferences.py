@@ -1,0 +1,2 @@
+"""User preference storage placeholder."""
+

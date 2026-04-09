@@ -1,0 +1,2 @@
+"""Calendar sync job placeholder."""
+
