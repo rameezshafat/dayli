@@ -14,7 +14,6 @@ from dayli.llm.client import LLMClient
 from dayli.memory.conversation_memory import ConversationMemory
 from dayli.memory.session_store import SessionStore
 from dayli.repositories.audit_repository import AuditRepository
-from dayli.repositories.event_repository import EventRepository
 from dayli.repositories.memory_repository import MemoryRepository
 from dayli.repositories.session_repository import SessionRepository
 from dayli.tools.calendar.base import CalendarProvider
@@ -78,4 +77,3 @@ class ConversationManager:
         await self._memory.save(payload.user_id, payload.session_id, payload.message, parsed, changes)
         await self._audit_repository.record(payload.user_id, payload.session_id, parsed, changes)
         return ChatResponse(session_id=payload.session_id, reply=reply, changes=changes)
-

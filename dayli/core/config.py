@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     api_prefix: str = "/v1"
     default_timezone: str = "UTC"
     openai_model: str = "gpt-4.1-mini"
+    cors_allow_origins: list[str] = ["*"]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -16,4 +17,3 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
-

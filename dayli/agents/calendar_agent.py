@@ -12,8 +12,7 @@ class CalendarAgent:
         self._scheduling_service = scheduling_service
 
     async def execute(self, request: ParsedRequest, user_id: str, mode: str) -> ScheduleChangeSet:
-        changes = self._scheduling_service.to_change_set(request)
+        changes = self._scheduling_service.to_change_set(request, mode=mode)
         if mode == "apply":
             await self._provider.apply_changes(user_id=user_id, changes=changes)
         return changes
-

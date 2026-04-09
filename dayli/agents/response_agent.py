@@ -17,7 +17,10 @@ class ResponseAgent:
         parsed_request: ParsedRequest,
         changes: ScheduleChangeSet,
     ) -> str:
+        del message, parsed_request
         if not changes.events:
             return "I couldn’t find any schedule changes to make yet."
-        return f"{plan.summary}: prepared {len(changes.events)} event change(s) in {changes.mode} mode."
-
+        titles = ", ".join(event.title for event in changes.events[:3])
+        if changes.mode == "apply":
+            return f"{plan.summary}. I updated {titles} on your calendar."
+        return f"{plan.summary}. I prepared {titles} for review in preview mode."

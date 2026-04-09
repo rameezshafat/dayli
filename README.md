@@ -30,6 +30,7 @@ User/API
 dayli/
 ├── apps/
 │   ├── api/
+│   ├── mobile/
 │   └── worker/
 ├── dayli/
 │   ├── agents/
@@ -52,6 +53,10 @@ dayli/
 ### `apps/api`
 
 FastAPI app entrypoint with chat, session, and health routes.
+
+### `apps/mobile`
+
+Expo React Native client for the iPhone demo. It provides a chat-style interface, starter prompts, and schedule preview cards backed by the Dayli API.
 
 ### `dayli/orchestration`
 
@@ -119,6 +124,30 @@ pip install -e .[dev]
 uvicorn apps.api.main:app --reload
 ```
 
+## iPhone demo path
+
+Run the backend:
+
+```bash
+uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Run the Expo client:
+
+```bash
+cd apps/mobile
+npm install
+EXPO_PUBLIC_DAYLI_API_URL=http://YOUR_LOCAL_IP:8000 npm start
+```
+
+Open the project in Expo Go on your iPhone and use the starter prompts to demo:
+
+- initial schedule creation
+- iterative edits like `Move my gym to tomorrow`
+- softer refinement like `Make my morning less busy`
+
+Use your machine's LAN IP instead of `127.0.0.1` so the iPhone can reach the backend.
+
 ## Next build steps
 
 1. Implement persistence repositories against PostgreSQL
@@ -126,4 +155,3 @@ uvicorn apps.api.main:app --reload
 3. Replace the stub LLM client with a real provider integration
 4. Add Google and Outlook OAuth flows
 5. Add a preview/apply write mode before production calendar mutations
-
