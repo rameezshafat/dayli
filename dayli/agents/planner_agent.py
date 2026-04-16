@@ -1,8 +1,31 @@
+from __future__ import annotations
+
+import json
+import logging
 from dataclasses import dataclass
+
+from pydantic import BaseModel
 
 from dayli.core.types import IntentType
 from dayli.domain.models.user_context import UserContext
 from dayli.llm.client import LLMClient
+
+logger = logging.getLogger(__name__)
+
+_SYSTEM = (
+    "You are a scheduling intent classifier. Given a user's message about their daily schedule, "
+    "classify the request into exactly one of these intents:\n"
+    '- "create": User wants to schedule new events or plan their day\n'
+    '- "edit": User wants to modify, move, or reschedule existing events\n'
+    '- "rebalance": User wants a lighter or easier day, or to redistribute time blocks\n'
+    '- "clarify": The request is ambiguous and needs more information\n\n'
+    'Respond with valid JSON only: {"intent": "<type>", "summary": "<one sentence>"}'
+)
+
+
+class _Classification(BaseModel):
+    intent: str
+    summary: str
 
 
 @dataclass(slots=True)
@@ -18,10 +41,29 @@ class PlannerAgent:
         self._llm_client = llm_client
 
     async def plan(self, message: str, context: UserContext | None = None) -> PlanResult:
-        lower_message = message.lower()
-        if "move" in lower_message or "tomorrow" in lower_message:
+        try:
+            response = await self._llm_client.client.chat.completions.create(
+                model=self._llm_client.model,
+                max_tokens=256,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": _SYSTEM},
+                    {"role": "user", "content": message},
+                ],
+            )
+            data = json.loads(response.choices[0].message.content or "{}")
+            result = _Classification.model_validate(data)
+            valid: set[str] = {"create", "edit", "rebalance", "clarify"}
+            intent_type: IntentType = result.intent if result.intent in valid else "create"  # type: ignore[assignment]
+            return PlanResult(intent_type=intent_type, summary=result.summary)
+        except Exception as exc:
+            logger.warning("LLM planner failed (%s), using heuristic fallback", exc)
+            return self._heuristic(message)
+
+    def _heuristic(self, message: str) -> PlanResult:
+        lower = message.lower()
+        if any(w in lower for w in ("move", "tomorrow", "reschedule", "shift")):
             return PlanResult(intent_type="edit", summary="Edit existing event")
-        if "less busy" in lower_message or "lighter" in lower_message:
+        if any(w in lower for w in ("less busy", "lighter", "free up", "clear")):
             return PlanResult(intent_type="rebalance", summary="Rebalance schedule")
         return PlanResult(intent_type="create", summary="Create schedule updates")
-
