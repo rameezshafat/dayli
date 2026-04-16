@@ -43,13 +43,17 @@ class ConversationManager:
 
     @classmethod
     def bootstrap(cls, settings: Settings) -> "ConversationManager":
-        llm_client = LLMClient(model=settings.openai_model)
+        llm_client = LLMClient(model=settings.gemini_model, api_key=settings.gemini_api_key)
         session_store = SessionStore(SessionRepository(), MemoryRepository())
         memory = ConversationMemory(session_store)
         scheduling_service = SchedulingService()
         conflict_service = ConflictService()
         edit_service = EditService()
-        provider: CalendarProvider = GoogleCalendarProvider()
+        provider: CalendarProvider = GoogleCalendarProvider(
+            client_id=settings.google_client_id,
+            client_secret=settings.google_client_secret,
+            refresh_token=settings.google_refresh_token,
+        )
 
         planner = PlannerAgent(llm_client)
         parser = ParserAgent(llm_client)

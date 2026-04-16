@@ -8,8 +8,14 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_prefix: str = "/v1"
     default_timezone: str = "UTC"
-    openai_model: str = "gpt-4.1-mini"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
     cors_allow_origins: list[str] = ["*"]
+
+    # Google Calendar OAuth2
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_refresh_token: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
