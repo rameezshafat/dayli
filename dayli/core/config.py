@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_prefix: str = "/v1"
     default_timezone: str = "UTC"
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    llm_base_url: str = "http://localhost:11434/v1"
+    llm_model: str = "llama3.2"
     cors_allow_origins: list[str] = ["*"]
 
     # Google Calendar OAuth2

@@ -15,10 +15,15 @@ logger = logging.getLogger(__name__)
 _SYSTEM = (
     "You are a scheduling intent classifier. Given a user's message about their daily schedule, "
     "classify the request into exactly one of these intents:\n"
-    '- "create": User wants to schedule new events or plan their day\n'
+    '- "create": User wants to schedule new events or describe their day — '
+    "including vague lifestyle descriptions like 'I spend my morning doing X'\n"
     '- "edit": User wants to modify, move, or reschedule existing events\n'
     '- "rebalance": User wants a lighter or easier day, or to redistribute time blocks\n'
-    '- "clarify": The request is ambiguous and needs more information\n\n'
+    '- "delete": User wants to remove, cancel, or clear events from their calendar\n'
+    '- "clarify": The request is completely unrelated to scheduling\n\n'
+    "Important: descriptive routines ('I usually...', 'my day involves...', 'I spend time on...') "
+    'are always "create" — never "clarify".\n'
+    "Words like 'remove', 'delete', 'cancel', 'clear' always mean \"delete\".\n\n"
     'Respond with valid JSON only: {"intent": "<type>", "summary": "<one sentence>"}'
 )
 
@@ -53,7 +58,7 @@ class PlannerAgent:
             )
             data = json.loads(response.choices[0].message.content or "{}")
             result = _Classification.model_validate(data)
-            valid: set[str] = {"create", "edit", "rebalance", "clarify"}
+            valid: set[str] = {"create", "edit", "rebalance", "clarify", "delete"}
             intent_type: IntentType = result.intent if result.intent in valid else "create"  # type: ignore[assignment]
             return PlanResult(intent_type=intent_type, summary=result.summary)
         except Exception as exc:
@@ -62,8 +67,10 @@ class PlannerAgent:
 
     def _heuristic(self, message: str) -> PlanResult:
         lower = message.lower()
+        if any(w in lower for w in ("remove", "delete", "cancel", "clear my", "clear all")):
+            return PlanResult(intent_type="delete", summary="Delete calendar events")
         if any(w in lower for w in ("move", "tomorrow", "reschedule", "shift")):
             return PlanResult(intent_type="edit", summary="Edit existing event")
-        if any(w in lower for w in ("less busy", "lighter", "free up", "clear")):
+        if any(w in lower for w in ("less busy", "lighter", "free up")):
             return PlanResult(intent_type="rebalance", summary="Rebalance schedule")
         return PlanResult(intent_type="create", summary="Create schedule updates")

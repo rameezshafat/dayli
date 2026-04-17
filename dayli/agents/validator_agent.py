@@ -12,6 +12,8 @@ class ValidatorAgent:
         self._edit_service = edit_service
 
     def validate(self, parsed_request: ParsedRequest, context: UserContext) -> ParsedRequest:
+        if parsed_request.intent_type == "delete":
+            return parsed_request          # nothing to validate for deletions
         adjusted_request = self._edit_service.apply_soft_edits(parsed_request, context)
         self._conflict_service.ensure_no_conflicts(adjusted_request, context)
         return adjusted_request

@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dayli</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #2563EB;
+      --blue-lt: #EFF6FF;
+      --dark:    #0F172A;
+      --mid:     #475569;
+      --sand:    #F1F5F9;
+      --cream:   #FFFFFF;
+      --border:  #CBD5E1;
+      --chip:    #E2E8F0;
+      --warn-bg: #FFF1D6;
+      --warn-tx: #7A5A14;
+      --red-bg:  #FDECEA;
+      --red-tx:  #8B1A1A;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--sand);
+      color: var(--dark);
+    }
+
+    /* ── Layout ── */
+    .shell {
+      display: flex;
+      height: 100vh;
+      max-width: 760px;
+      margin: 0 auto;
+      flex-direction: column;
+      padding: 0 20px 20px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 22px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+    header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-top: 6px;
+      color: var(--dark);
+    }
+    header p {
+      margin-top: 5px;
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.5;
+    }
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .btn-clear {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--mid);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 6px;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-clear:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ── Guide panel ── */
+    .guide {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .3s ease, opacity .25s ease;
+      opacity: 0;
+    }
+    .guide.open {
+      max-height: 600px;
+      opacity: 1;
+    }
+    .guide-inner {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--cream);
+      padding: 16px 18px 18px;
+      margin-top: 10px;
+      margin-bottom: 2px;
+    }
+    .guide-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      color: var(--blue);
+      margin-bottom: 14px;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 20px;
+    }
+    @media (max-width: 520px) { .guide-grid { grid-template-columns: 1fr; } }
+    .guide-section h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--mid);
+      margin-bottom: 7px;
+    }
+    .guide-section ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .guide-section li {
+      font-size: 13px;
+      color: var(--dark);
+      line-height: 1.4;
+      padding-left: 14px;
+      position: relative;
+    }
+    .guide-section li::before {
+      content: '·';
+      position: absolute;
+      left: 0;
+      color: var(--blue);
+      font-weight: 700;
+    }
+    .guide-section li code {
+      background: var(--blue-lt);
+      color: var(--blue);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 12px;
+      font-family: "SF Mono", ui-monospace, monospace;
+    }
+    .guide-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
+    }
+    .guide-model {
+      font-size: 13px;
+      color: var(--mid);
+      line-height: 1.6;
+    }
+    .guide-model strong { color: var(--dark); }
+    .guide-formula {
+      margin-top: 10px;
+      background: var(--blue-lt);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--dark);
+      font-family: "SF Mono", ui-monospace, monospace;
+      line-height: 1.7;
+    }
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .mode-toggle label {
+      font-size: 13px;
+      color: var(--mid);
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-wrap {
+      position: relative;
+      width: 40px;
+      height: 22px;
+    }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+    .toggle-wrap input:checked + .slider { background: var(--blue); }
+    .toggle-wrap input:checked + .slider::before { transform: translateX(18px); }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .bubble {
+      border-radius: 20px;
+      padding: 14px 16px;
+      max-width: 100%;
+    }
+    .bubble.user {
+      background: var(--dark);
+      align-self: flex-end;
+      max-width: 80%;
+    }
+    .bubble.assistant {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+      width: 100%;
+    }
+    .bubble-role {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #809087;
+      margin-bottom: 6px;
+    }
+    .bubble.user .bubble-role { color: #7BA3E8; }
+    .bubble-text {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .bubble.user .bubble-text { color: #F9F8F4; }
+    .bubble.assistant .bubble-text { color: var(--dark); }
+
+    /* ── Event cards ── */
+    .card-stack { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .event-card {
+      background: var(--blue-lt);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .event-info { flex: 1; min-width: 0; }
+    .event-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1E3A8A;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .event-time {
+      margin-top: 3px;
+      font-size: 13px;
+      color: #1D4ED8;
+    }
+
+    /* ── Apply / Delete buttons (per-message) ── */
+    .apply-row {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-apply {
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-apply:hover { opacity: .85; }
+    .btn-apply:disabled { opacity: .5; cursor: default; }
+    .btn-delete-sel {
+      background: #DC2626;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-delete-sel:hover { opacity: .85; }
+    .btn-delete-sel:disabled { opacity: .5; cursor: default; }
+    .applied-badge {
+      font-size: 13px;
+      color: var(--blue);
+      font-weight: 600;
+    }
+    /* ── Delete event checkboxes ── */
+    .event-card.deletable {
+      background: #FEF2F2;
+      cursor: default;
+    }
+    .event-card.deletable label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .event-card.deletable input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: #DC2626;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .event-card.deletable .event-title { color: #991B1B; }
+    .event-card.deletable .event-time  { color: #B91C1C; }
+
+    /* ── Warnings ── */
+    /* ── Coaching feedback ── */
+    .feedback-box {
+      margin-top: 12px;
+      background: var(--blue-lt);
+      border-left: 3px solid var(--blue);
+      border-radius: 0 10px 10px 0;
+      padding: 10px 14px;
+    }
+    .feedback-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--blue);
+      margin-bottom: 5px;
+    }
+    .feedback-text {
+      font-size: 14px;
+      color: var(--dark);
+      line-height: 1.55;
+    }
+    .warn-box {
+      margin-top: 10px;
+      background: var(--warn-bg);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .warn-box p { font-size: 13px; color: var(--warn-tx); line-height: 1.4; }
+
+    .error-box {
+      margin-top: 10px;
+      background: var(--red-bg);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .error-box p { font-size: 13px; color: var(--red-tx); }
+
+    /* ── Loading ── */
+    .loading-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      color: var(--mid);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Starter chips ── */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 0;
+    }
+    .chip {
+      background: var(--chip);
+      border: none;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #3D4034;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .chip:hover { background: #ddd5c5; }
+
+    /* ── Composer ── */
+    .composer {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 10px 10px 10px 14px;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .composer textarea {
+      flex: 1;
+      border: none;
+      background: transparent;
+      resize: none;
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--dark);
+      min-height: 44px;
+      max-height: 140px;
+      outline: none;
+    }
+    .composer textarea::placeholder { color: #99a89f; }
+    .btn-send {
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .15s;
+      flex-shrink: 0;
+    }
+    .btn-send:disabled { background: #93BBFD; cursor: default; }
+    .btn-send:not(:disabled):hover { opacity: .85; }
+
+    /* ── Logo mark — Day Cycle ── */
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    /* Container */
+    .dc-logo {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 5px rgba(253,230,138,.18));
+    }
+
+    /*
+      Conic ring — maps clock positions to sky colors:
+        12 o'clock = dawn amber
+         3 o'clock = midday soft blue
+         6 o'clock = golden hour peach
+         9 o'clock = night indigo
+    */
+    .dc-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(
+        from -90deg,
+        #FDE68A   0deg,   /* dawn */
+        #FCA5A5  50deg,   /* sunrise blush */
+        #BAE6FD  95deg,   /* midday sky */
+        #93C5FD 148deg,   /* afternoon */
+        #FDBA74 195deg,   /* golden hour */
+        #DDD6FE 248deg,   /* dusk lavender */
+        #4338CA 295deg,   /* evening indigo */
+        #0F172A 330deg,   /* deep night */
+        #FDE68A 360deg    /* back to dawn */
+      );
+    }
+
+    /* Inner face — SVG fills this exactly (48 - 5 - 5 = 38px) */
+    .dc-face {
+      position: absolute;
+      inset: 5px;
+      border-radius: 50%;
+      overflow: hidden;
+      z-index: 2;
+    }
+    .dc-face svg { display: block; }
+
+    /* Orbiting time marker */
+    .dc-orbit {
+      position: absolute;
+      inset: 0;
+      animation: dc-spin 12s linear infinite;
+      z-index: 3;
+    }
+    .dc-dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #fff;
+      top: 1px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow:
+        0 0 3px 1px rgba(255,255,255,.9),
+        0 0 8px 3px rgba(253,230,138,.85);
+    }
+
+    /* Planning arc (AI hint) — pulsing opacity only, no movement */
+    .dc-plan {
+      animation: dc-plan 3.8s ease-in-out infinite;
+    }
+
+    @keyframes dc-spin { to { transform: rotate(360deg); } }
+    @keyframes dc-plan {
+      0%, 100% { opacity: .3; }
+      50%       { opacity: .8; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="header-row">
+      <div>
+        <div class="logo-row">
+          <!-- Day-cycle logo -->
+          <div class="dc-logo">
+            <!-- Conic day-cycle ring -->
+            <div class="dc-ring"></div>
+
+            <!--
+              Inner face SVG (38×38):
+              • radial gradient background — deep night sky
+              • sun  at top    — warm amber circle + 4 rays
+              • moon at bottom — soft lavender crescent
+              • planning arc   — 3 connected nodes, AI hint, pulses subtly
+            -->
+            <div class="dc-face">
+              <svg width="38" height="38" viewBox="0 0 38 38" fill="none"
+                   xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <!-- Night sky radial gradient -->
+                  <radialGradient id="dcFG" cx="50%" cy="38%" r="58%">
+                    <stop offset="0%"   stop-color="#1E3A8A"/>
+                    <stop offset="100%" stop-color="#020617"/>
+                  </radialGradient>
+                  <!-- Moon mask: outer circle minus offset shadow circle = crescent -->
+                  <mask id="dcMM">
+                    <circle cx="19" cy="30" r="4"     fill="white"/>
+                    <circle cx="21.5" cy="30" r="3.6" fill="black"/>
+                  </mask>
+                </defs>
+
+                <!-- Sky background -->
+                <circle cx="19" cy="19" r="19" fill="url(#dcFG)"/>
+
+                <!-- Sun (top) -->
+                <circle cx="19" cy="8.5" r="3" fill="#FDE68A"/>
+                <!-- 4 rays: gap from circle edge, rounded caps -->
+                <line x1="19"   y1="2.5"  x2="19"   y2="5"    stroke="#FDE68A" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="24.5" y1="8.5"  x2="22.5" y2="8.5"  stroke="#FDE68A" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="19"   y1="14.5" x2="19"   y2="12"   stroke="#FDE68A" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="13.5" y1="8.5"  x2="15.5" y2="8.5"  stroke="#FDE68A" stroke-width="1.5" stroke-linecap="round"/>
+
+                <!-- Moon (bottom) — crescent via mask -->
+                <circle cx="19" cy="30" r="4" fill="#C7D2FE" mask="url(#dcMM)"/>
+
+                <!-- Planning arc — AI hint (3 nodes + arc path) -->
+                <g class="dc-plan">
+                  <circle cx="16.5" cy="20"  r="1"   fill="#93C5FD"/>
+                  <circle cx="19"   cy="18.5" r="1.1" fill="#BFDBFE"/>
+                  <circle cx="21.5" cy="20"  r="1"   fill="#93C5FD"/>
+                  <path d="M17.4 19.6 Q19 17.4 20.6 19.6"
+                        stroke="#93C5FD" stroke-width="0.9"
+                        stroke-linecap="round" fill="none"/>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Orbiting time marker -->
+            <div class="dc-orbit">
+              <div class="dc-dot"></div>
+            </div>
+          </div>
+          <div class="eyebrow">Dayli</div>
+        </div>
+        <h1>What's on your agenda?</h1>
+        <p>Describe your day in plain English — I'll turn it into calendar events.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;margin-top:6px;">
+        <button class="btn-clear" id="guideBtn">Guide</button>
+        <button class="btn-clear" id="clearBtn">Clear chat</button>
+      </div>
+    </div>
+    <div class="mode-toggle">
+      <label for="autoApply">Auto-apply to Google Calendar</label>
+      <div class="toggle-wrap">
+        <input type="checkbox" id="autoApply" />
+        <span class="slider"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Guide panel -->
+  <div class="guide" id="guide">
+    <div class="guide-inner">
+      <div class="guide-title">Mental model — how to describe your day</div>
+
+      <p class="guide-model">
+        Think of each event as <strong>what + when</strong>. Chain multiple events with a comma or "and".
+        Dayli handles the rest.
+      </p>
+      <div class="guide-formula">
+        [event name] at [time]<br>
+        [event name] from [start] to [end]<br>
+        [event name] at [time] for [duration]
+      </div>
+
+      <hr class="guide-divider" />
+
+      <div class="guide-grid">
+        <div class="guide-section">
+          <h4>Time formats</h4>
+          <ul>
+            <li><code>at 9am</code> or <code>at 9:30am</code></li>
+            <li><code>from 9 to 5</code> or <code>9–5</code></li>
+            <li><code>for 30 min</code> / <code>1 hour</code></li>
+            <li><code>tomorrow at 7</code> — assumes am for early hours</li>
+            <li><code>Monday</code>, <code>next Friday</code></li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h4>Multiple events</h4>
+          <ul>
+            <li>Separate with a comma: <code>gym at 7, work 9–5</code></li>
+            <li>Use "and": <code>lunch at 1 and call at 3</code></li>
+            <li>List your whole day in one sentence</li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h4>Editing existing events</h4>
+          <ul>
+            <li><code>move gym to tomorrow</code></li>
+            <li><code>reschedule my 3pm call to 4pm</code></li>
+            <li><code>make my meeting shorter</code></li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h4>Flexible scheduling</h4>
+          <ul>
+            <li><code>make my afternoon less busy</code></li>
+            <li><code>free up my morning</code></li>
+            <li><code>lighter day tomorrow</code></li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h4>Common event defaults</h4>
+          <ul>
+            <li><code>gym</code> → 7–8am if no time given</li>
+            <li><code>work</code> → 9am–5pm</li>
+            <li><code>dinner</code> → 7–8pm</li>
+            <li><code>lunch</code> → 12–1pm</li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h4>Full-day example</h4>
+          <ul>
+            <li><code>gym at 7, work 9–12, lunch at 1, team standup at 2 for 30 min, dinner at 7</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="bubble assistant">
+      <div class="bubble-role">Dayli</div>
+      <div class="bubble-text">Describe your day and I'll turn it into a calendar preview. Toggle auto-apply above to write directly to Google Calendar.</div>
+    </div>
+  </div>
+
+  <div class="chips" id="chips">
+    <button class="chip">Gym at 7am, work 9–5, dinner at 8</button>
+    <button class="chip">Move my gym to tomorrow</button>
+    <button class="chip">Make my afternoon less busy</button>
+    <button class="chip">Team standup at 10am for 30 min</button>
+  </div>
+
+  <div class="composer">
+    <textarea id="input" placeholder="Tell Dayli about your day..." rows="1"></textarea>
+    <button class="btn-send" id="sendBtn" disabled>Send</button>
+  </div>
+</div>
+
+<script>
+  const API = '';           // same origin — FastAPI serves this file
+  const USER_ID = 'web-user';
+  const SESSION_ID = `web-${Date.now()}`;
+
+  const messagesEl = document.getElementById('messages');
+  const inputEl    = document.getElementById('input');
+  const sendBtn    = document.getElementById('sendBtn');
+  const autoApply  = document.getElementById('autoApply');
+  const clearBtn   = document.getElementById('clearBtn');
+  const guideBtn   = document.getElementById('guideBtn');
+  const guideEl    = document.getElementById('guide');
+
+  guideBtn.addEventListener('click', () => {
+    const open = guideEl.classList.toggle('open');
+    guideBtn.textContent = open ? 'Hide guide' : 'Guide';
+  });
+
+  clearBtn.addEventListener('click', () => {
+    messagesEl.innerHTML = `
+      <div class="bubble assistant">
+        <div class="bubble-role">Dayli</div>
+        <div class="bubble-text">Describe your day and I'll turn it into a calendar preview. Toggle auto-apply above to write directly to Google Calendar.</div>
+      </div>`;
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+  });
+
+  // ── auto-resize textarea ──
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+    sendBtn.disabled = !inputEl.value.trim();
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) send(inputEl.value.trim());
+    }
+  });
+
+  sendBtn.addEventListener('click', () => send(inputEl.value.trim()));
+
+  document.getElementById('chips').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (chip) send(chip.textContent.trim());
+  });
+
+  // ── core send ──
+  let isLoading = false;
+
+  async function send(message, mode) {
+    if (!message || isLoading) return;
+    mode = mode || (autoApply.checked ? 'apply' : 'preview');
+
+    appendUserBubble(message);
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    const loadingEl = appendLoading();
+    isLoading = true;
+
+    try {
+      const res = await fetch(`${API}/v1/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: USER_ID,
+          session_id: SESSION_ID,
+          message,
+          mode,
+        }),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      const data = await res.json();
+      loadingEl.remove();
+      appendAssistantBubble(data, message);
+    } catch (err) {
+      loadingEl.remove();
+      appendErrorBubble(err.message);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // ── apply a previewed result ──
+  async function applyMessage(message, btn, badgeEl, eventIds) {
+    btn.disabled = true;
+    btn.textContent = 'Applying…';
+    try {
+      const body = { user_id: USER_ID, session_id: SESSION_ID, message, mode: 'apply' };
+      if (eventIds) body.event_ids = eventIds;
+      const res = await fetch(`${API}/v1/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      btn.remove();
+      badgeEl.textContent = '✓ Added to Google Calendar';
+      badgeEl.style.display = 'inline';
+    } catch (err) {
+      btn.textContent = 'Apply to Calendar';
+      btn.disabled = false;
+      badgeEl.textContent = 'Failed: ' + err.message;
+      badgeEl.style.color = 'var(--red-tx)';
+      badgeEl.style.display = 'inline';
+    }
+  }
+
+  // ── delete selected events ──
+  async function deleteSelected(message, btn, badgeEl, getCheckedIds) {
+    const ids = getCheckedIds();
+    if (!ids.length) { badgeEl.textContent = 'Select at least one event.'; badgeEl.style.display = 'inline'; return; }
+    btn.disabled = true;
+    btn.textContent = 'Deleting…';
+    try {
+      const res = await fetch(`${API}/v1/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, session_id: SESSION_ID, message, mode: 'apply', event_ids: ids }),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      btn.remove();
+      badgeEl.textContent = `✓ Deleted ${ids.length} event${ids.length > 1 ? 's' : ''} from Google Calendar`;
+      badgeEl.style.display = 'inline';
+      badgeEl.style.color = '#DC2626';
+    } catch (err) {
+      btn.textContent = 'Delete Selected';
+      btn.disabled = false;
+      badgeEl.textContent = 'Failed: ' + err.message;
+      badgeEl.style.color = 'var(--red-tx)';
+      badgeEl.style.display = 'inline';
+    }
+  }
+
+  // ── DOM builders ──
+  function appendUserBubble(text) {
+    const el = document.createElement('div');
+    el.className = 'bubble user';
+    el.innerHTML = `<div class="bubble-role">You</div><div class="bubble-text">${esc(text)}</div>`;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function appendAssistantBubble(data, originalMessage) {
+    const el = document.createElement('div');
+    el.className = 'bubble assistant';
+
+    const events   = data.changes?.events ?? [];
+    const warnings = data.changes?.warnings ?? [];
+    const mode      = data.changes?.mode ?? 'preview';
+    const operation = data.changes?.operation ?? 'add';
+    const isDelete  = operation === 'delete';
+
+    const [confirm, ...rest] = (data.reply || '').split(/(?<=\.)\s+/);
+    const coaching = rest.join(' ').trim();
+
+    let html = `<div class="bubble-role">Dayli</div>
+                <div class="bubble-text">${esc(confirm)}</div>`;
+
+    // coaching feedback only for non-delete responses
+    if (!isDelete && coaching) {
+      html += `<div class="feedback-box">
+        <div class="feedback-label">Coach feedback</div>
+        <div class="feedback-text">${esc(coaching)}</div>
+      </div>`;
+    }
+
+    if (events.length) {
+      if (isDelete && mode === 'preview') {
+        // Deletable event list with checkboxes
+        html += `<div class="card-stack" id="del-cards-${el.id || Date.now()}">`;
+        events.forEach((ev, i) => {
+          const cbId = `del-cb-${Date.now()}-${i}`;
+          html += `<div class="event-card deletable">
+            <label>
+              <input type="checkbox" id="${cbId}" data-event-id="${esc(ev.event_id || '')}" checked />
+              <div class="event-info">
+                <div class="event-title">${esc(ev.title)}</div>
+                <div class="event-time">${formatWindow(ev.start, ev.end)}</div>
+              </div>
+            </label>
+          </div>`;
+        });
+        html += `</div>`;
+        html += `<div class="apply-row">
+          <button class="btn-delete-sel">Delete Selected</button>
+          <span class="applied-badge" style="display:none"></span>
+        </div>`;
+      } else if (isDelete && mode === 'apply') {
+        html += `<div class="apply-row">
+          <span class="applied-badge" style="color:#DC2626">✓ Deleted from Google Calendar</span>
+        </div>`;
+      } else if (!isDelete) {
+        // Normal create/edit event cards
+        html += `<div class="card-stack">`;
+        for (const ev of events) {
+          html += `<div class="event-card">
+            <div class="event-info">
+              <div class="event-title">${esc(ev.title)}</div>
+              <div class="event-time">${formatWindow(ev.start, ev.end)}</div>
+            </div>
+          </div>`;
+        }
+        html += `</div>`;
+
+        if (mode === 'preview') {
+          html += `<div class="apply-row">
+            <button class="btn-apply">Apply to Calendar</button>
+            <span class="applied-badge" style="display:none"></span>
+          </div>`;
+        } else {
+          html += `<div class="apply-row">
+            <span class="applied-badge">✓ Added to Google Calendar</span>
+          </div>`;
+        }
+      }
+    }
+
+    if (warnings.length) {
+      html += `<div class="warn-box">` + warnings.map(w => `<p>${esc(w)}</p>`).join('') + `</div>`;
+    }
+
+    el.innerHTML = html;
+
+    // Wire apply button (create/edit)
+    const applyBtn = el.querySelector('.btn-apply');
+    if (applyBtn) {
+      const badge = el.querySelector('.applied-badge');
+      applyBtn.addEventListener('click', () => applyMessage(originalMessage, applyBtn, badge));
+    }
+
+    // Wire delete-selected button
+    const delBtn = el.querySelector('.btn-delete-sel');
+    if (delBtn) {
+      const badge = el.querySelector('.applied-badge');
+      const getCheckedIds = () =>
+        [...el.querySelectorAll('input[type="checkbox"]:checked')]
+          .map(cb => cb.dataset.eventId)
+          .filter(Boolean);
+      delBtn.addEventListener('click', () => deleteSelected(originalMessage, delBtn, badge, getCheckedIds));
+    }
+
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function appendErrorBubble(msg) {
+    const el = document.createElement('div');
+    el.className = 'bubble assistant';
+    el.innerHTML = `<div class="bubble-role">Dayli</div>
+      <div class="bubble-text">Something went wrong.</div>
+      <div class="error-box"><p>${esc(msg)}</p></div>`;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+  }
+
+  function appendLoading() {
+    const el = document.createElement('div');
+    el.className = 'loading-row';
+    el.innerHTML = `<div class="spinner"></div><span>Thinking…</span>`;
+    messagesEl.appendChild(el);
+    scrollToBottom();
+    return el;
+  }
+
+  // ── helpers ──
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function formatWindow(start, end) {
+    const s = new Date(start);
+    const e = new Date(end);
+    const date = s.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    const t1   = s.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const t2   = e.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return `${date} · ${t1} – ${t2}`;
+  }
+</script>
+</body>
+</html>

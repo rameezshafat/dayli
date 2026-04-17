@@ -8,6 +8,7 @@ class ChatRequest(BaseModel):
     session_id: str
     message: str = Field(min_length=1)
     mode: str = "preview"
+    event_ids: list[str] | None = None   # selected event IDs for targeted delete
 
 
 class ChatResponse(BaseModel):
